@@ -1,11 +1,12 @@
 package com.example.eventmanager.entity;
 
-import com.example.eventmanager.dto.request.user.UserRequest;
-import com.example.eventmanager.dto.response.user.UserResponse;
+import com.example.eventmanager.dto.request.user.InitiateUserRequest;
 import com.example.eventmanager.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @NoArgsConstructor
@@ -39,34 +40,4 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-
-    @PrePersist
-    @PreUpdate
-    public void encodePassword() {
-        if (password != null && !password.startsWith("$2a$")) { // Avoid double encoding
-            password = new BCryptPasswordEncoder().encode(password);
-        }
-    }
-
-    public static User fromRequest(UserRequest userRequest) {
-        return User.builder()
-                .name(userRequest.name())
-                .email(userRequest.email())
-                .password(userRequest.password())
-                .cellPhone(userRequest.cellPhone())
-                .role(Role.USER)
-                .build();
-    }
-
-    public static UserResponse fromEntity(User user) {
-        return UserResponse.builder()
-                .name(user.getName())
-                .email(user.getEmail())
-                .cellPhone(user.getCellPhone())
-                .build();
-    }
-
-    public String getPassword() {
-        return null;
-    }
 }

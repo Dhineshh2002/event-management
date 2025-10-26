@@ -1,9 +1,7 @@
 package com.example.eventmanager.service.impl;
 
-import com.example.eventmanager.dto.request.user.GetUserRequest;
-import com.example.eventmanager.dto.request.user.OtpRequest;
-import com.example.eventmanager.dto.request.user.SetNewPasswordRequest;
-import com.example.eventmanager.dto.request.user.UserRequest;
+import com.example.eventmanager.dto.request.user.*;
+import com.example.eventmanager.dto.response.user.LoginResponse;
 import com.example.eventmanager.dto.response.user.TokenResponse;
 import com.example.eventmanager.exception.InvalidPasswordException;
 import com.example.eventmanager.service.UserService;
@@ -24,9 +22,9 @@ class UserServiceImplTest {
 
     @Test
     void initiateUser() {
-        UserRequest initiateUser = new UserRequest(
-                "Ramadoss",
-                "dhineshramadoss10@gmail.com",
+        InitiateUserRequest initiateUser = new InitiateUserRequest(
+                "Ko",
+                "dhinesh2003@zohomail.in",
                 "Dhinesh1@",
                 "1234567890"
         );
@@ -36,40 +34,66 @@ class UserServiceImplTest {
 
     @Test
     void createUser() {
-        OtpRequest otpRequest = new OtpRequest(
-                "720192",
-                "dhineshramadoss10@gmail.com"
+        CreateUserRequest createUserRequest = new CreateUserRequest(
+                "752518",
+                "dhinesh2003@zohomail.in"
         );
-        userService.createUser(otpRequest);
+        userService.createUser(createUserRequest);
     }
 
     @Test
     void forgotPassword() {
-        TokenResponse token = userService.forgotPassword("dhineshhh1702@gmail.com");
+        ForgotPasswordRequest forgotPasswordRequest = new ForgotPasswordRequest(
+                "dhineshhh1702@gmail.com"
+        );
+        TokenResponse token = userService.forgotPassword(forgotPasswordRequest);
         log.info("token = {}", token.securityToken);
         log.info("expires in {} minutes", token.expiresInMinutes);
     }
 
     @Test
     void resetPassword() {
-        SetNewPasswordRequest setNewPasswordRequest = new SetNewPasswordRequest(
+        ResetPasswordRequest resetPasswordRequest = new ResetPasswordRequest(
                 "rhhnQVgMk62cEos4mD3cvcDJc7t0vaWOwQ",
                 "Dhinesh1@@@@@",
                 "Dhinesh1@@@@@"
         );
         log.info("{}", "rhhnQVgMk62cEos4mD3cvcDJc7t0vaWOwQ".length());
-        validate(setNewPasswordRequest);
-        userService.resetPassword(setNewPasswordRequest);
+        validate(resetPasswordRequest);
+        userService.resetPassword(resetPasswordRequest);
     }
 
     @Test
     void getUser() {
-        GetUserRequest getUserRequest = new GetUserRequest(
+        LoginUserRequest loginUserRequest = new LoginUserRequest(
                 "dhineshramadoss10@gmail.com",
                 "Dhinesh1@@@@@@@@@@@"
         );
 
         assertThrows(InvalidPasswordException.class,
-                () -> userService.getUser(getUserRequest));
+                () -> userService.loginUser(loginUserRequest));
+    }
+
+    @Test
+    void testInitiateUser() {
+    }
+
+    @Test
+    void testCreateUser() {
+    }
+
+    @Test
+    void loginUser() {
+        LoginUserRequest request = new LoginUserRequest(
+                "dhinesh2003@zohomail.in",
+                "Dhinesh1@"
+        );
+        LoginResponse response = userService.loginUser(request);
+        log.info("username {}", response.getUserName());
+        log.info("token {}", response.getToken());
+    }
+
+    @Test
+    void getUserById() {
     }
 }

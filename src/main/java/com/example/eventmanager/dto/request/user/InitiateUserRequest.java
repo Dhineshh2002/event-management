@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import javax.validation.constraints.NotNull;
 
-public record UserRequest (
+public record InitiateUserRequest(
         @NotNull(message = "Name is required")
         @Size(min = 1, max = 45)
         String name,

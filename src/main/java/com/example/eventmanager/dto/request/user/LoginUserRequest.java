@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import javax.validation.constraints.NotNull;
 
-public record GetUserRequest (
+public record LoginUserRequest(
         @NotNull(message = "Email is required")
         @Email(message = "Invalid email")
         String email,

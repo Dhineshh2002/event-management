@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record SetNewPasswordRequest(
+public record ResetPasswordRequest(
         @NotBlank(message = "Token is required")
         @Size(
                 min = Length.PASSWORD_RESET_TOKEN,
