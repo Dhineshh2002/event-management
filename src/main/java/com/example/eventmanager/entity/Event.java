@@ -1,9 +1,8 @@
 package com.example.eventmanager.entity;
 import com.example.eventmanager.entity.enums.EventMode;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -11,6 +10,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 @Table(
         indexes = {
                 @Index(name = "idx_event_date", columnList = "date"),

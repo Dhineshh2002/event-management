@@ -1,14 +1,14 @@
 package com.example.eventmanager.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 @Table(
         indexes = {
                 @Index(name = "idx_user_id", columnList = "user_id"),

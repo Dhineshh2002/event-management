@@ -132,6 +132,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with this id")));
     }
 
+    @Override
+    public User fetchUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with this id"));
+    }
+
     private UserResponse getCurrentUser(String token) throws AuthenticationException {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AuthenticationException("Invalid token");
