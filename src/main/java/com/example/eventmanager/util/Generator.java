@@ -15,4 +15,7 @@ public class Generator {
         return String.format("%06d", 100000 + secureRandom.nextInt(900000));
     }
 
+    public static String ticketNumber() {
+        return String.format("T%07d", 1000000 + secureRandom.nextInt(9000000));
+    }
 }

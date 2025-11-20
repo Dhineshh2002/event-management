@@ -3,7 +3,7 @@ package com.example.eventmanager.service.impl;
 import com.example.eventmanager.dto.request.user.*;
 import com.example.eventmanager.dto.response.user.LoginResponse;
 import com.example.eventmanager.dto.response.user.TokenResponse;
-import com.example.eventmanager.exception.InvalidPasswordException;
+import com.example.eventmanager.exception.custom.InvalidPasswordException;
 import com.example.eventmanager.service.UserService;
 
 import lombok.extern.slf4j.Slf4j;

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Event Ticket</title>
+    <style>
+        .ticket { border: 1px solid #000; padding: 20px; width: 350px;}
+    </style>
+</head>
+<body>
+<div class="ticket">
+    <h2 th:text="${eventName}">Event Name</h2>
+    <p>Date: <span th:text="${eventDate}">2025-10-26</span></p>
+    <p>Attendee: <span th:text="${userName}">User Name</span></p>
+    <p>Ticket #: <span th:text="${ticketNumber}">123456</span></p>
+    <img th:src="'data:image/png;base64,' + ${qrBase64}" alt="QR Code"/>
+</div>
+</body>
+</html>

@@ -4,7 +4,6 @@ import com.example.eventmanager.dto.request.user.*;
 import com.example.eventmanager.dto.response.user.ApiResponse;
 import com.example.eventmanager.dto.response.user.LoginResponse;
 import com.example.eventmanager.dto.response.user.UserResponse;
-import com.example.eventmanager.entity.User;
 import com.example.eventmanager.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

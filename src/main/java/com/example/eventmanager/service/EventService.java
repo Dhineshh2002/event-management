@@ -4,7 +4,6 @@ import com.example.eventmanager.dto.request.event.CreateEventRequest;
 import com.example.eventmanager.dto.response.event.EventResponse;
 import com.example.eventmanager.entity.Event;
 import com.example.eventmanager.entity.enums.EventMode;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +13,8 @@ public interface EventService {
     Long createEvent(CreateEventRequest createEventRequest);
 
     EventResponse getEventById(Long id);
-    Event fetchEventById(Long aLong);
+
+    Event fetchEventById(Long id);
 
     List<EventResponse> getAllEvents();
 

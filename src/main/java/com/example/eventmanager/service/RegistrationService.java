@@ -2,21 +2,19 @@ package com.example.eventmanager.service;
 
 import com.example.eventmanager.dto.request.registration.RegistrationRequest;
 import com.example.eventmanager.dto.response.registration.RegistrationResponse;
-import com.example.eventmanager.entity.Event;
-import com.example.eventmanager.entity.Registration;
-import com.example.eventmanager.entity.User;
 
 import java.util.List;
 
 public interface RegistrationService {
 
-    void registerUserToEvent(RegistrationRequest registrationRequest);
+    void registerUserToEvent(RegistrationRequest registrationRequest) throws InterruptedException;
 
-    boolean isUserRegistered(Long userId, Long eventId);
+    boolean isUserRegistered(Long userId, Long eventId) throws InterruptedException;
 
-    List<RegistrationResponse> getRegistrationsByUser(User user);
+    List<RegistrationResponse> getRegistrationsByUser(Long userId);
 
-    List<RegistrationResponse> getRegistrationsByEvent(Event event);
+    List<RegistrationResponse> getRegistrationsByEvent(Long eventId);
 
-    void cancelRegistration(User user, Event event);
+    void cancelRegistration(Long userId, Long eventId);
+
 }

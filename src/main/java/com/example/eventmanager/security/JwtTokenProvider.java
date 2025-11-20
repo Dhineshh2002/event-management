@@ -17,10 +17,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
+    @Value("${JWT_SECRET}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration-ms}")
+    @Value("${JWT_EXPIRATION_MS}")
     private long jwtExpirationInMs;
 
     private final RedisTemplate<String, Object> redisTemplate;

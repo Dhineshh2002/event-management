@@ -28,12 +28,10 @@ public class SecurityConfig {
                         .requestMatchers(publicEndPoints).permitAll()
                         .anyRequest().authenticated()
                 )
-                // Add JWT filter before Spring's username/password filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
                 );
-
         return http.build();
     }
 }

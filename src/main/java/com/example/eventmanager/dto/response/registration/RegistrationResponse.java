@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,10 +28,16 @@ public class RegistrationResponse {
                 .eventId(registration.getEvent().getId())
                 .eventName(registration.getEvent().getName())
                 .eventDate(registration.getEvent().getDate())
-                .userFullName(registration.getUser().getFullName())
+                .userFullName(registration.getUser().getName())
                 .userEmail(registration.getUser().getEmail())
                 .ticketQRCodeData(registration.getTicketQRCodeData())
                 .ticketPdfPath(registration.getTicketPdfPath())
                 .build();
+    }
+
+    public static List<RegistrationResponse> fromEntities(List<Registration> registrations) {
+        return registrations.stream()
+                .map(RegistrationResponse::fromEntity)
+                .toList();
     }
 }
