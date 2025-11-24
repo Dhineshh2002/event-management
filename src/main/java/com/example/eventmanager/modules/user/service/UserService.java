@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public interface UserService {
     void initiateUser(InitiateUserRequest initiateUserRequest);
-    void createUser(CreateUserRequest createUserRequest);
+    Long createUser(CreateUserRequest createUserRequest);
     LoginResponse loginUser(LoginUserRequest loginUserRequest);
     UserResponse getUserById(@Valid @NotNull Long userId);
     User fetchUserById(@Valid @NotNull Long userId);

@@ -1,14 +1,18 @@
 package com.example.eventmanager.exception.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
-import org.springframework.http.HttpStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record Error(
-        HttpStatus status,
+        int status,
+        String error,
         String message,
-        List<String> errors
-) {
-}
+        String path,
+        LocalDateTime timestamp,
+        List<String> errors // For detailed validation or field errors
+) {}

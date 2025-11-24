@@ -1,17 +1,14 @@
 package com.example.eventmanager.modules.user.service.impl;
 
-import com.example.eventmanager.modules.user.service.OtpService;
+import com.example.eventmanager.common.enums.Role;
+import com.example.eventmanager.exception.custom.*;
 import com.example.eventmanager.modules.user.dto.request.*;
 import com.example.eventmanager.modules.user.dto.response.LoginResponse;
 import com.example.eventmanager.modules.user.dto.response.TokenResponse;
 import com.example.eventmanager.modules.user.dto.response.UserResponse;
-import com.example.eventmanager.common.enums.Role;
-import com.example.eventmanager.exception.custom.ExpiredUserDataException;
-import com.example.eventmanager.exception.custom.InvalidOtpException;
-import com.example.eventmanager.exception.custom.InvalidPasswordException;
-import com.example.eventmanager.exception.custom.TokenExpiredException;
 import com.example.eventmanager.modules.user.entity.User;
 import com.example.eventmanager.modules.user.repository.UserRepository;
+import com.example.eventmanager.modules.user.service.OtpService;
 import com.example.eventmanager.modules.user.service.UserService;
 import com.example.eventmanager.security.JwtTokenProvider;
 import com.example.eventmanager.util.Generator;
@@ -26,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -55,7 +53,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void createUser(CreateUserRequest createUserRequest) {
+    public Long createUser(CreateUserRequest createUserRequest) {
         if (otpService.isOtpInValid(createUserRequest.otp(), createUserRequest.email())) {
             throw new InvalidOtpException("Invalid or expired OTP.");
         }
@@ -63,17 +61,18 @@ public class UserServiceImpl implements UserService {
         String key = createUserRequest.email();
         InitiateUserRequest initiateUserRequest = getUserRequest(key);
         User user = buildUser(initiateUserRequest);
-        userRepository.save(user);
+        User created = userRepository.save(user);
 
         // Clear the OTP and user registration data from Redis
         redisTemplate.delete(Arrays.asList(key, key + "_OTP", key + "_OTP_RESENDS", key + "_OTP_COOLDOWN"));
+        return created.getId();
     }
 
     @Override
     public LoginResponse loginUser(LoginUserRequest loginUserRequest) {
         User user = getUserByEmail(loginUserRequest.email());
         doesPasswordMatch(loginUserRequest.password(), user);
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail());
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail(), Role.USER);
         return LoginResponse.builder()
                 .token(token)
                 .userName(user.getName())
@@ -93,7 +92,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found with this email"));
         log.info(user.getPassword());
         user.setPassword(resetPasswordRequest.newPassword());
         userRepository.save(user);
@@ -142,12 +141,12 @@ public class UserServiceImpl implements UserService {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AuthenticationException("Invalid token");
         }
-        String jwt = token.substring(7);
-        Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
-        if (userId == null) {
+        String jwtToken = token.substring(7);
+        Map<String, Object> user = jwtTokenProvider.getUserFromToken(jwtToken);
+        if (user == null) {
             throw new AuthenticationException("Invalid token");
         }
-        return getUserById(userId);
+        return getUserById((Long) user.get("userId"));
     }
 
     private User buildUser(InitiateUserRequest initiateUserRequest) {
@@ -168,7 +167,7 @@ public class UserServiceImpl implements UserService {
 
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Invalid email or password!"));
+                .orElseThrow(() -> new NotFoundException("User not found with this email!"));
     }
 
     private InitiateUserRequest getUserRequest(String key) {

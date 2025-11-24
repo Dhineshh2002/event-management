@@ -50,4 +50,8 @@ public class OtpServiceImpl implements OtpService {
         String storedOtp = (String) redisTemplate.opsForValue().get(email + "_OTP");
         return storedOtp == null || !storedOtp.equals(otp);
     }
+
+    private void cusFun(Runnable task) {
+        task.run();
+    }
 }

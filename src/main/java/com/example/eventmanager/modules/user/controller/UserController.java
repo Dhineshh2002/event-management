@@ -1,21 +1,23 @@
 package com.example.eventmanager.modules.user.controller;
 
-import com.example.eventmanager.modules.user.service.UserService;
 import com.example.eventmanager.modules.user.dto.request.*;
 import com.example.eventmanager.modules.user.dto.response.ApiResponse;
 import com.example.eventmanager.modules.user.dto.response.LoginResponse;
 import com.example.eventmanager.modules.user.dto.response.UserResponse;
+import com.example.eventmanager.modules.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -28,8 +30,13 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody @Valid CreateUserRequest createUserRequest) {
-        userService.createUser(createUserRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Long userId = userService.createUser(createUserRequest);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(userId)
+                .toUri();
+        return ResponseEntity.created(location).build();
     }
 
     @PostMapping("/login")
@@ -58,16 +65,15 @@ public class UserController {
     }
 
     @PostMapping("/password/reset")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest) {
         userService.resetPassword(resetPasswordRequest);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse<>("success", "Password has updated successfully!", null));
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/password/forgot")
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest forgotPasswordRequest) {
         userService.forgotPassword(forgotPasswordRequest);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(new ApiResponse<>("success", "Forgot password link was generated!", null));
+        return ResponseEntity.accepted().build();
     }
 
 }

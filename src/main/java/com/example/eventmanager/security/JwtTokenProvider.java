@@ -1,5 +1,6 @@
 package com.example.eventmanager.security;
 
+import com.example.eventmanager.common.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
@@ -30,12 +32,13 @@ public class JwtTokenProvider {
         return key;
     }
 
-    public String generateToken(Long userId, String email) {
+    public String generateToken(Long userId, String email, Role role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
         String token = Jwts.builder()
                 .setSubject(Long.toString(userId))
                 .claim("email", email)
+                .claim("role", role.value())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
@@ -44,13 +47,16 @@ public class JwtTokenProvider {
         return token;
     }
 
-    public Long getUserIdFromToken(String token) {
+    public Map<String, Object> getUserFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return Long.parseLong(claims.getSubject());
+        return Map.of(
+                "userId", Long.parseLong(claims.getSubject()),
+                "role", claims.get("role", String.class)
+        );
     }
 
     public boolean validateToken(String token) {
