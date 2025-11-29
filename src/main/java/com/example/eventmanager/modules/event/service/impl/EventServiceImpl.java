@@ -6,6 +6,8 @@ import com.example.eventmanager.modules.event.dto.response.EventResponse;
 import com.example.eventmanager.modules.event.entity.Event;
 import com.example.eventmanager.modules.event.repository.EventRepository;
 import com.example.eventmanager.modules.event.service.EventService;
+import com.example.eventmanager.modules.user.entity.User;
+import com.example.eventmanager.modules.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final UserService userService;
 
     @Override
     public Long createEvent(CreateEventRequest request) {
@@ -47,18 +50,23 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Page<EventResponse> getEventsByUser(Long userId, Pageable pageable) {
+        return eventRepository.findByUserId(userId, pageable).map(EventResponse::fromEntity);
+    }
+
+    @Override
     public Page<EventResponse> getAllEvents(Pageable pageable) {
         return eventRepository.findAll(pageable).map(EventResponse::fromEntity);
     }
 
     @Override
     public Page<EventResponse> getEventsByMode(EventMode mode, Pageable page) {
-        return eventRepository.findAllByEventMode(mode).map(EventResponse::fromEntity);
+        return eventRepository.findAllByEventMode(mode, page).map(EventResponse::fromEntity);
     }
 
     @Override
     public Page<EventResponse> getEventsByDateRange(LocalDateTime start, LocalDateTime end, Pageable page) {
-        return eventRepository.findAllByDateBetween(start, end).map(EventResponse::fromEntity);
+        return eventRepository.findAllByDateBetween(start, end, page).map(EventResponse::fromEntity);
     }
 
     @Override
@@ -84,9 +92,11 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event buildEvent(CreateEventRequest request) {
+        User user = userService.fetchUserById(request.userId());
         return Event.builder()
                 .name(request.name())
                 .description(request.description())
+                .user(user)
                 .date(request.date())
                 .address(request.address())
                 .eventMode(request.eventMode())

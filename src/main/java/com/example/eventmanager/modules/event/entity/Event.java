@@ -28,7 +28,7 @@ public class Event implements Serializable {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @Column(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false, length = 100)

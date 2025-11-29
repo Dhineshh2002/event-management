@@ -17,6 +17,8 @@ public interface EventService {
 
     Event fetchEventById(Long id);
 
+    Page<EventResponse> getEventsByUser(Long userId, Pageable pageable);
+
     Page<EventResponse> getAllEvents(Pageable pageable);
 
     Page<EventResponse> getEventsByMode(EventMode mode, Pageable pageable);

@@ -14,6 +14,10 @@ public record CreateEventRequest(
         @Size(max = 2000, message = "Event description cannot exceed 2000 characters")
         String description,
 
+        @NotNull(message = "User Id is required")
+        @Positive(message = "User Id must be positive number")
+        Long userId,
+
         @NotNull(message = "Event mode is required")
         EventMode eventMode,
 
