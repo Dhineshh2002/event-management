@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+
+import static com.example.eventmanager.util.Utils.buildUri;
 
 
 @RequiredArgsConstructor
@@ -31,11 +32,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody @Valid CreateUserRequest createUserRequest) {
         Long userId = userService.createUser(createUserRequest);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(userId)
-                .toUri();
+        URI location = buildUri(userId, "/{id}");
         return ResponseEntity.created(location).build();
     }
 

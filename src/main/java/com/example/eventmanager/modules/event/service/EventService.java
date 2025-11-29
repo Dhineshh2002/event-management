@@ -1,12 +1,13 @@
 package com.example.eventmanager.modules.event.service;
 
+import com.example.eventmanager.common.enums.EventMode;
 import com.example.eventmanager.modules.event.dto.request.CreateEventRequest;
 import com.example.eventmanager.modules.event.dto.response.EventResponse;
-import com.example.eventmanager.common.enums.EventMode;
 import com.example.eventmanager.modules.event.entity.Event;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface EventService {
 
@@ -16,11 +17,13 @@ public interface EventService {
 
     Event fetchEventById(Long id);
 
-    List<EventResponse> getAllEvents();
+    Page<EventResponse> getEventsByUser(Long userId, Pageable pageable);
 
-    List<EventResponse> getEventsByMode(EventMode mode);
+    Page<EventResponse> getAllEvents(Pageable pageable);
 
-    List<EventResponse> getEventsByDateRange(LocalDateTime start, LocalDateTime end);
+    Page<EventResponse> getEventsByMode(EventMode mode, Pageable pageable);
+
+    Page<EventResponse> getEventsByDateRange(LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     EventResponse updateEvent(Long id, CreateEventRequest request);
 
