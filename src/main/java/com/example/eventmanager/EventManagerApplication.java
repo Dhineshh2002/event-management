@@ -1,6 +1,5 @@
 package com.example.eventmanager;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,10 +11,5 @@ import org.springframework.cache.annotation.EnableCaching;
 public class EventManagerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EventManagerApplication.class, args);
-	}
-
-	@PostConstruct
-	public void checkEnv() {
-		log.info("DB_URL from ENV = " + System.getenv("DB_URL"));
 	}
 }
