@@ -59,11 +59,7 @@ public class EventController {
     public ResponseEntity<Page<EventResponse>> getAllEvents(
             @PageableDefault(page = 0, size = 20) Pageable pageable
     ) {
-        int maxSize = 5;
-        Pageable limited = pageable.getPageSize() > maxSize
-                ? Pageable.ofSize(maxSize).withPage(pageable.getPageNumber())
-                : pageable;
-        Page<EventResponse> responses = eventService.getAllEvents(limited);
+        Page<EventResponse> responses = eventService.getAllEvents(pageable);
         return ResponseEntity.ok(responses);
     }
 
