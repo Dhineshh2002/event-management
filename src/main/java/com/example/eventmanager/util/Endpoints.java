@@ -2,6 +2,10 @@ package com.example.eventmanager.util;
 
 public final class Endpoints {
     public static final String[] PUBLIC_ENDPOINTS = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
             "/api/v1/users/initiate",
             "/api/v1/users/login",
             "/api/v1/users/password/reset",

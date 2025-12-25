@@ -12,7 +12,6 @@ import java.util.concurrent.Executor;
 @RequiredArgsConstructor
 public class AsyncRunner {
     private final Executor executor;
-
     public CompletableFuture<Void> run(Runnable task) {
         return CompletableFuture.runAsync(task, executor)
                 .exceptionally(ex -> {

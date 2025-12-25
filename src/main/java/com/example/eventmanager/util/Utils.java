@@ -34,4 +34,10 @@ public class Utils {
                 .buildAndExpand(id)
                 .toUri();
     }
+
+    public static void validateCacheKey(String key) {
+        if (key == null || key.trim().isEmpty()) {
+            throw new IllegalArgumentException("key must not be null or empty");
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.eventmanager.modules.user.service.impl;
 
+import com.example.eventmanager.cache.CacheService;
 import com.example.eventmanager.common.enums.Role;
 import com.example.eventmanager.exception.custom.*;
 import com.example.eventmanager.modules.user.dto.request.*;
@@ -16,8 +17,8 @@ import com.example.eventmanager.util.Length;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,25 +32,28 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final CacheService cache;
     private final UserRepository userRepository;
     private final OtpService otpService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    private static final int OTP_EXPIRY_MINUTES = 3;
-    private static final int OTP_COOLDOWN_SECONDS = 45;
-    private static final int OTP_MAX_RESENDS = 3;
+    @Value("${app.otp.expiry-in-min}")
+    private int OTP_EXPIRY_MINUTES;
 
+    /**
+     * This method will initiate the user once the request is valid, and OTP will be sent
+     * to an email.
+     */
     @Override
     public void initiateUser(InitiateUserRequest initiateUserRequest) {
         String email = initiateUserRequest.email();
-        hasOtpCooldown(email);
+        otpService.hasOtpCooldown(email);
         if (isUserExistByEmail(email)) {
             throw new DuplicateKeyException("Email already exist");
         }
         generateAndSendOtp(initiateUserRequest, email);
-        redisTemplate.opsForValue().set(email + "_OTP_RESENDS", 0, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
+        cache.set(email + "_OTP_RESENDS", 0, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class UserServiceImpl implements UserService {
         User created = userRepository.save(user);
 
         // Clear the OTP and user registration data from Redis
-        redisTemplate.delete(Arrays.asList(key, key + "_OTP", key + "_OTP_RESENDS", key + "_OTP_COOLDOWN"));
+        cache.delete(Arrays.asList(key, key + "_OTP", key + "_OTP_RESENDS", key + "_OTP_COOLDOWN"));
         return created.getId();
     }
 
@@ -85,7 +89,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
         String token = resetPasswordRequest.token();
-        String email = (String) redisTemplate.opsForValue().get(token);
+        String email = cache.get(token, String.class);
 
         if (email == null) {
             throw new TokenExpiredException("Token has expired");
@@ -101,8 +105,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resendOtp(ResendOtpRequest resendOtpRequest) {
         String email = resendOtpRequest.email();
-        hasOtpCooldown(email);
-        checkResendLimit(email);
+        otpService.hasOtpCooldown(email);
+        otpService.checkResendLimit(email);
         InitiateUserRequest initiateUserRequest = getUserRequest(email);
         generateAndSendOtp(initiateUserRequest, email);
     }
@@ -117,7 +121,7 @@ public class UserServiceImpl implements UserService {
         final int EXPIRY_MINUTES = 15;
         String securityToken = Generator.securityToken(Length.PASSWORD_RESET_TOKEN);
 
-        redisTemplate.opsForValue().set(securityToken, email, EXPIRY_MINUTES, TimeUnit.MINUTES);
+        cache.set(securityToken, email, EXPIRY_MINUTES, TimeUnit.MINUTES);
 
         return TokenResponse.builder()
                 .securityToken(securityToken)
@@ -171,8 +175,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private InitiateUserRequest getUserRequest(String key) {
-        Object object = redisTemplate.opsForValue().get(key);
-        if (!(object instanceof InitiateUserRequest initiateUserRequest)) {
+        InitiateUserRequest initiateUserRequest = cache.get(key, InitiateUserRequest.class);
+        if (initiateUserRequest == null) {
             throw new ExpiredUserDataException("User registration data has expired. Please try again.");
         }
         return initiateUserRequest;
@@ -180,31 +184,11 @@ public class UserServiceImpl implements UserService {
 
     private void generateAndSendOtp(InitiateUserRequest initiateUserRequest, String email) {
         String otp = otpService.generateOtp();
-        log.info("otp = {}", otp);
-        redisTemplate.opsForValue().set(email, initiateUserRequest, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
-        redisTemplate.opsForValue().set(email + "_OTP", otp, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
-        redisTemplate.opsForValue().set(email + "_OTP_COOLDOWN", "LOCKED", OTP_COOLDOWN_SECONDS, TimeUnit.SECONDS);
+        cache.set(email, initiateUserRequest, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
         otpService.sendOtp(otp, email, initiateUserRequest.name());
     }
 
     private boolean isUserExistByEmail(String email) {
         return userRepository.existsByEmail(email);
-    }
-
-    private void hasOtpCooldown(String email) {
-        String cooldownKey = email + "_OTP_COOLDOWN";
-        Boolean hasCooldown = redisTemplate.hasKey(cooldownKey);
-        if (Boolean.TRUE.equals(hasCooldown)) {
-            throw new IllegalStateException("OTP already sent. Please wait before requesting again.");
-        }
-    }
-
-    private void checkResendLimit(String email) {
-        String key = email + "_OTP_RESENDS";
-        Integer attempts = (Integer) redisTemplate.opsForValue().get(key);
-        if (attempts != null && attempts >= OTP_MAX_RESENDS) {
-            throw new IllegalStateException("Maximum OTP resend attempts reached.");
-        }
-        redisTemplate.opsForValue().increment(key);
     }
 }
