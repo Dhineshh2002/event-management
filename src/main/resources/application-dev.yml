@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -44,6 +44,10 @@ spring:
 app:
   ticket:
     path: ${TICKETS_BASE_PATH}
+  otp:
+    expiry-in-min: 3
+    cooldown-sec: 45
+    max-resend: 3
 thymeleaf:
   prefix: file:///D:/Intellij/templates/
   suffix: .html

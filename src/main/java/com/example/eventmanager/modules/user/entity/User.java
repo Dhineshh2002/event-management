@@ -11,10 +11,10 @@ import lombok.*;
 @Getter
 @Setter
 @Table(
+        name = "user",
         indexes = {
                 @Index(name = "idx_email", columnList = "email"),
-        },
-        name = "user"
+        }
 )
 public class User {
     @Id

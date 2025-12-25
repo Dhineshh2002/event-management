@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -33,10 +32,8 @@ public class EmailServiceImpl implements EmailService {
         } else {
             send(subject, message, to);
         }
-        // ToDo: save to db
     }
 
-    @Async
     public void send(String subject, String text, String... to) {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
