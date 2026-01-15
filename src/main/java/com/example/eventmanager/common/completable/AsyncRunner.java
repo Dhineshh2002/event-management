@@ -13,10 +13,6 @@ import java.util.concurrent.Executor;
 public class AsyncRunner {
     private final Executor executor;
     public CompletableFuture<Void> run(Runnable task) {
-        return CompletableFuture.runAsync(task, executor)
-                .exceptionally(ex -> {
-                    log.error("Async execution failed", ex);
-                    return null; // fallback
-                });
+        return CompletableFuture.runAsync(task, executor);
     }
 }

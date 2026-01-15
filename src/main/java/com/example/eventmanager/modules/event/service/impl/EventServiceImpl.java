@@ -8,6 +8,7 @@ import com.example.eventmanager.modules.event.repository.EventRepository;
 import com.example.eventmanager.modules.event.service.EventService;
 import com.example.eventmanager.modules.user.entity.User;
 import com.example.eventmanager.modules.user.service.UserService;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,11 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final UserService userService;
+    private final EntityManager entityManager;
 
     @Override
     public Long createEvent(CreateEventRequest request) {
-        if (eventRepository.findByName(request.name()).isPresent()) {
+        if (eventRepository.existsByName(request.name())) {
             throw new DuplicateKeyException("Event already exists with this name");
         }
         Event event = buildEvent(request);
@@ -92,7 +94,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event buildEvent(CreateEventRequest request) {
-        User user = userService.fetchUserById(request.userId());
+        User user = entityManager.getReference(User.class, request.userId());
         return Event.builder()
                 .name(request.name())
                 .description(request.description())

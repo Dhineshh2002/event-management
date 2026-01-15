@@ -1,4 +1,4 @@
-package com.example.eventmanager.modules.email.entity;
+package com.example.eventmanager.modules.communication.entity;
 
 import com.example.eventmanager.common.enums.EmailStatus;
 import com.example.eventmanager.modules.user.entity.User;

@@ -1,7 +1,6 @@
 package com.example.eventmanager.service.impl;
 
-import com.example.eventmanager.common.enums.EventType;
-import com.example.eventmanager.modules.email.service.EmailService;
+import com.example.eventmanager.modules.communication.service.EmailService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,8 +17,7 @@ class EmailServiceImplTest {
             emailService.sendEmail(
                     "Hi test",
                     "Test",
-                    "dhineshramadoss10@gmail.com",
-                    EventType.ASYNC
+                    "dhineshramadoss10@gmail.com"
             );
         }
     }

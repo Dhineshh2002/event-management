@@ -1,8 +1,8 @@
 package com.example.eventmanager.modules.user.service.impl;
 
 import com.example.eventmanager.cache.CacheService;
-import com.example.eventmanager.common.enums.EventType;
-import com.example.eventmanager.modules.email.service.EmailService;
+import com.example.eventmanager.modules.communication.dto.EmailResponse;
+import com.example.eventmanager.modules.communication.service.EmailService;
 import com.example.eventmanager.modules.user.service.OtpService;
 import com.example.eventmanager.util.Generator;
 import lombok.RequiredArgsConstructor;
@@ -23,22 +23,18 @@ public class OtpServiceImpl implements OtpService {
     private final CacheService cache;
 
     @Value("${app.otp.expiry-in-min}")
-    private static int OTP_EXPIRY_MINUTES;
+    private int OTP_EXPIRY_MINUTES;
     @Value("${app.otp.cooldown-sec}")
-    private static int OTP_COOLDOWN_SECONDS;
+    private int OTP_COOLDOWN_SECONDS;
     @Value("${app.otp.max-resend}")
-    private static int OTP_MAX_RESENDS;
+    private int OTP_MAX_RESENDS;
 
     @Override
-    public String generateOtp() {
-        return Generator.otp();
-    }
-
-    @Override
-    public void sendOtp(String otp, String toEmail, String userName) {
-        log.info("otp: {}, to_email: {}", otp, toEmail);
-
-
+    public void sendOtp(String toEmail, String userName) {
+        String otp = Generator.otp();
+        log.info("Generated OTP for {}: {}", toEmail, otp);
+        log.info("OTP_EXPIRY_MINUTES: {}", OTP_EXPIRY_MINUTES);
+        log.info("OTP_COOLDOWN_SECONDS: {}", OTP_COOLDOWN_SECONDS);
         cache.set(toEmail + "_OTP", otp, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
         cache.set(toEmail + "_OTP_COOLDOWN", "LOCKED", OTP_COOLDOWN_SECONDS, TimeUnit.SECONDS);
 
@@ -56,7 +52,12 @@ public class OtpServiceImpl implements OtpService {
             Best regards,
             Event Manager Team
             """.formatted(userName, otp);
-        emailService.sendEmail(otpText, otpSubject, toEmail, EventType.ASYNC);
+        EmailResponse emailResponse = emailService.sendEmail(otpText, otpSubject, toEmail);
+        if(emailResponse.success()) {
+            log.info("OTP email sent successfully to {}", toEmail);
+        } else {
+            log.error("Failed to send OTP email to {}: {}", toEmail, emailResponse.message());
+        }
     }
 
     @Override

@@ -55,6 +55,11 @@ public class CacheService {
         redisTemplate.delete(keys);
     }
 
+    public void delete(String key) {
+        Objects.requireNonNull(key, "keys must not be null");
+        redisTemplate.delete(key);
+    }
+
     public boolean exists(String key) {
         validateCacheKey(key);
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));

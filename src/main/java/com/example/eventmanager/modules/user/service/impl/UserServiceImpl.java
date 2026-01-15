@@ -18,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class UserServiceImpl implements UserService {
         if (isUserExistByEmail(email)) {
             throw new DuplicateKeyException("Email already exist");
         }
-        generateAndSendOtp(initiateUserRequest, email);
+        sendOtp(initiateUserRequest, email);
         cache.set(email + "_OTP_RESENDS", 0, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
     }
 
@@ -63,8 +64,7 @@ public class UserServiceImpl implements UserService {
         }
 
         String key = createUserRequest.email();
-        InitiateUserRequest initiateUserRequest = getUserRequest(key);
-        User user = buildUser(initiateUserRequest);
+        User user = buildUser(getUserRequest(key));
         User created = userRepository.save(user);
 
         // Clear the OTP and user registration data from Redis
@@ -76,13 +76,12 @@ public class UserServiceImpl implements UserService {
     public LoginResponse loginUser(LoginUserRequest loginUserRequest) {
         User user = getUserByEmail(loginUserRequest.email());
         doesPasswordMatch(loginUserRequest.password(), user);
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail(), Role.USER);
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getEmail(), Role.NORMAL_USER);
         return LoginResponse.builder()
                 .token(token)
                 .userName(user.getName())
                 .email(user.getEmail())
                 .cellPhone(user.getCellPhone())
-                .role(user.getRole())
                 .build();
     }
 
@@ -108,7 +107,7 @@ public class UserServiceImpl implements UserService {
         otpService.hasOtpCooldown(email);
         otpService.checkResendLimit(email);
         InitiateUserRequest initiateUserRequest = getUserRequest(email);
-        generateAndSendOtp(initiateUserRequest, email);
+        sendOtp(initiateUserRequest, email);
     }
 
     @Override
@@ -141,13 +140,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with this id"));
     }
 
-    private UserResponse getCurrentUser(String token) throws AuthenticationException {
+    private UserResponse getCurrentUser(String token) throws AuthenticationException{
         if (token == null || !token.startsWith("Bearer ")) {
             throw new AuthenticationException("Invalid token");
         }
         String jwtToken = token.substring(7);
         Map<String, Object> user = jwtTokenProvider.getUserFromToken(jwtToken);
-        if (user == null) {
+        if (user == null || user.get("userId") == null) {
             throw new AuthenticationException("Invalid token");
         }
         return getUserById((Long) user.get("userId"));
@@ -159,7 +158,7 @@ public class UserServiceImpl implements UserService {
                 .email(initiateUserRequest.email())
                 .password(passwordEncoder.encode(initiateUserRequest.password()))
                 .cellPhone(initiateUserRequest.cellPhone())
-                .role(Role.USER)
+                .role(Role.NORMAL_USER)
                 .build();
     }
 
@@ -169,6 +168,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Cacheable(value = "users", key = "#email")
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found with this email!"));
@@ -182,10 +182,9 @@ public class UserServiceImpl implements UserService {
         return initiateUserRequest;
     }
 
-    private void generateAndSendOtp(InitiateUserRequest initiateUserRequest, String email) {
-        String otp = otpService.generateOtp();
-        cache.set(email, initiateUserRequest, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
-        otpService.sendOtp(otp, email, initiateUserRequest.name());
+    private void sendOtp(InitiateUserRequest initiateUserRequest, String key) {
+        cache.set(key, initiateUserRequest, OTP_EXPIRY_MINUTES, TimeUnit.MINUTES);
+        otpService.sendOtp(key, initiateUserRequest.name());
     }
 
     private boolean isUserExistByEmail(String email) {

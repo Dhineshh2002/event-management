@@ -29,6 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        log.info(
+                "Incoming Request | uri={} method={}",
+                request.getRequestURI(),
+                request.getMethod()
+        );
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -38,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = (Long) user.get("userId");
                 String roleName = (String) user.get("role");
                 log.info("UserId: {}, Role: {} from JWT", userId, roleName);
+
                 if (userId != null) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(userId, null, List.of(
@@ -50,10 +57,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (Exception ex) {
                 // Invalid token, ignore. SecurityContext remains empty.
-                log.error("JWT validation failed: {}", ex.getMessage());
+                log.error("JWT validation failed: {}", ex.getMessage(), ex);
             }
         }
 
         filterChain.doFilter(request, response);
+        log.info(
+                "Outgoing Response | method={} uri={} status={}",
+                request.getMethod(),
+                request.getRequestURI(),
+                response.getStatus()
+        );
     }
 }
