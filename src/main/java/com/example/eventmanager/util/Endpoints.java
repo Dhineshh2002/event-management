@@ -6,15 +6,15 @@ public final class Endpoints {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/v3/api-docs.yaml",
+            "/api/v1/users",
             "/api/v1/users/initiate",
-            "/api/v1/users/login",
-            "/api/v1/users/password/reset",
-            "/api/v1/users/password/forgot",
-            "/api/v1/users/otp/resend",
+            "/api/v1/auth/login",
+            "/api/v1/auth/password/reset",
+            "/api/v1/auth/password/forgot",
+            "/api/v1/auth/otp/resend",
     };
 
     public static final String[] ADMIN_ENDPOINTS = {
-            "/api/v1/users/*",
             "/api/v1/admins/initiate",
             "/api/v1/admins/login",
             "/api/v1/admins/password/reset",
@@ -24,7 +24,7 @@ public final class Endpoints {
             "/api/v1/admins",
     };
 
-    public static final String[] USER_ENDPOINTS = {
+    public static final String[] NORMAL_USER_ENDPOINTS = {
             "/api/v1/users/me"
     };
 }
